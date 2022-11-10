@@ -1,0 +1,23 @@
+name: Unit tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  Test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js 14.17.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14.17.0
+
+      - run: yarn install --frozen-lockfile
+      - run: yarn test
+        env:
+          CI: true
