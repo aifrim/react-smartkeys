@@ -12,9 +12,9 @@ import React, {
 
 type Callback = () => void
 
-type Groups = string
+export type Groups = string
 
-type SmartkeyDefinition = {
+export type SmartkeyDefinition = {
   key: string
   passthrough?: boolean
   group: Groups
@@ -98,13 +98,21 @@ function Provider({ children, keyChainingTime = 200 }: SmartkeysProviderProps) {
     }
 
     const cb = (event: KeyboardEvent) => {
+      const target = event.target
+
+      const inputting =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        (target instanceof HTMLDivElement &&
+          target.getAttribute('contenteditable') === 'true')
+
       const keys = [...lastKeyRef.current, getHotkeyName(event)].filter(
         (key) => !!key
       )
 
       const stored = storageRef.current[keys.join(' ')]
 
-      if (stored) {
+      if (stored && (!inputting || stored.keyDef.passthrough)) {
         stored.cb()
       }
 
@@ -161,12 +169,16 @@ export function useSmartkeys(props: UseSmartkeysProp) {
   return called
 }
 
+export type SmartkeyGroupedDefinition = Pick<
+  SmartkeyDefinition,
+  'key' | 'passthrough'
+> & {
+  hotkey: HotKey | HotKey[]
+}
+
 export function useGroupedSmartkeys(): Record<
   Groups,
-  Pick<
-    SmartkeyDefinition,
-    'key' | ('passthrough' & { hotkey: HotKey | HotKey[] })
-  >[]
+  SmartkeyGroupedDefinition[]
 > {
   const { storage } = useContext(Smartkeys)
 

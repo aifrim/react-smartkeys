@@ -1,0 +1,140 @@
+name: ci
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+          key: npm-feature-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            npm-feature-${{ hashFiles('yarn.lock') }}
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            dist
+          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
+          restore-keys: |
+            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14.17.0
+
+      - run: yarn install --frozen-lockfile 2> >(grep -v warning 1>&2)
+
+  test:
+    needs: [build]
+    name: test + coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+          key: npm-feature-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            npm-feature-${{ hashFiles('yarn.lock') }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14.17.0
+
+      - run: yarn prepare
+      - run: yarn test:unit
+
+  lint:
+    needs: [build]
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+          key: npm-feature-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            npm-feature-${{ hashFiles('yarn.lock') }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14.17.0
+
+      - run: yarn prepare
+      - run: yarn test:lint
+
+  format:
+    needs: [build]
+    name: format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+          key: npm-feature-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            npm-feature-${{ hashFiles('yarn.lock') }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14.17.0
+
+      - run: yarn test:format
+
+  publish:
+    needs: [build, test, lint, format]
+    name: publish
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - registry-url: https://registry.npmjs.org
+            registry-token: secrets.NPM_PUBLISH
+          - registry-url: https://npm.pkg.github.com
+            registry-token: secrets.GH_PACKAGES_PUBLISH
+    # if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+          key: npm-feature-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            npm-feature-${{ hashFiles('yarn.lock') }}
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            dist
+          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
+          restore-keys: |
+            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14.17.0
+          registry-url: ${{ matrix.registry-url }}
+
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ matrix.registry-token }}

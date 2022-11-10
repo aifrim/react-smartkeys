@@ -6,8 +6,10 @@ node_modules
 # builds
 build
 dist
-coverage
 .rpt2_cache
+
+# tests
+reports
 
 # misc
 .DS_Store

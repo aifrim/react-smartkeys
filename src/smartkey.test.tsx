@@ -2,7 +2,11 @@ import '@testing-library/jest-dom'
 import { act, fireEvent, render } from '@testing-library/react'
 import { parseHotkey } from 'is-hotkey'
 import React, { useMemo, useState } from 'react'
-import Smartkeys, { useGroupedSmartkeys, useSmartkeys } from '.'
+import Smartkeys, {
+  useGroupedSmartkeys,
+  useSmartkeys,
+  SmartkeyDefinition
+} from '.'
 
 jest.setTimeout(3000)
 
@@ -12,6 +16,8 @@ const sleep = async (ms: number) =>
 describe('Smartkeys', () => {
   it('should be truthy', () => {
     expect(Smartkeys.Provider).toBeTruthy()
+    expect(useSmartkeys).toBeTruthy()
+    expect(useGroupedSmartkeys).toBeTruthy()
   })
 
   it('should render', () => {
@@ -27,7 +33,7 @@ describe('Smartkeys', () => {
   })
 
   it('should register/unregister hotkey', () => {
-    const keyDef = {
+    const keyDef: SmartkeyDefinition = {
       key: 'mod+k',
       group: 'main'
     }
@@ -64,7 +70,7 @@ describe('Smartkeys', () => {
   })
 
   it('should register multiple hotkeys', async () => {
-    const keyList = [
+    const keyList: SmartkeyDefinition[] = [
       {
         key: 'mod+k',
         group: 'main'
@@ -113,7 +119,7 @@ describe('Smartkeys', () => {
   })
 
   it('should chain multiple hotkeys', async () => {
-    const keyDef = {
+    const keyDef: SmartkeyDefinition = {
       key: 'mod+k alt+a',
       group: 'main'
     }
@@ -152,11 +158,11 @@ describe('Smartkeys', () => {
   })
 
   it('should register all available hotkeys', async () => {
-    const keyDef1 = {
+    const keyDef1: Omit<SmartkeyDefinition, 'group'> = {
       key: 'ctrl+b'
     }
 
-    const keyDef2 = {
+    const keyDef2: Omit<SmartkeyDefinition, 'group'> = {
       key: 'mod+k alt+a',
       passthrough: true
     }
@@ -220,5 +226,73 @@ describe('Smartkeys', () => {
 
     expect(container.getByText(getStr(getDef(keyDef1)))).toBeInTheDocument()
     expect(container.getByText(getStr(getDef(keyDef2)))).toBeInTheDocument()
+  })
+
+  it('should only trigger hotkeys with passthrough when inputting', async () => {
+    const keyList: SmartkeyDefinition[] = [
+      {
+        key: 'mod+k mod+a',
+        group: 'main',
+        passthrough: true
+      },
+      {
+        key: 'shift+a',
+        group: 'main',
+        passthrough: false
+      }
+    ]
+
+    const TestSmartkeyConsumer = () => {
+      const calledKey = useSmartkeys(keyList)
+
+      return <div>{calledKey}</div>
+    }
+
+    const Test = () => {
+      return (
+        <Smartkeys.Provider>
+          <TestSmartkeyConsumer />
+          <input data-testid='input-focus' />
+          <textarea data-testid='textarea-focus'></textarea>
+          <div data-testid='div-focus' contentEditable />
+        </Smartkeys.Provider>
+      )
+    }
+
+    const container = render(<Test />)
+    const input = container.getByTestId('input-focus')
+    const div = container.getByTestId('div-focus')
+    const textarea = container.getByTestId('div-focus')
+
+    for (const focusedContainer of [input, div, textarea]) {
+      fireEvent.keyUp(focusedContainer, {
+        ctrlKey: true,
+        key: 'k'
+      })
+
+      await act(async () => {
+        await sleep(100)
+      })
+
+      fireEvent.keyUp(focusedContainer, {
+        ctrlKey: true,
+        key: 'a'
+      })
+
+      expect(container.getByText(keyList[0].key)).toBeInTheDocument()
+
+      await act(async () => {
+        await sleep(300)
+      })
+
+      act(() => {
+        fireEvent.keyUp(focusedContainer, {
+          shiftKey: true,
+          key: 'a'
+        })
+      })
+
+      expect(container.getByText(keyList[0].key)).toBeInTheDocument()
+    }
   })
 })
