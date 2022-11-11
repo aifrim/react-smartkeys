@@ -22,11 +22,12 @@
     }
   },
   "rules": {
-    "space-before-function-paren": 0,
-    "react/prop-types": 0,
-    "react/jsx-handler-names": 0,
-    "react/jsx-fragments": 0,
-    "react/no-unused-prop-types": 0,
-    "import/export": 0
+    "space-before-function-paren": "off",
+    "react/jsx-handler-names": "off",
+    "react/jsx-fragments": "off",
+    "import/export": "off",
+    "react/prop-types": "warn",
+    "react/no-unused-prop-types": "warn",
+    "no-unused-vars": "warn"
   }
 }

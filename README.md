@@ -1,6 +1,6 @@
 # react-smartkeys
 
-> Smart react hotkeys
+> 🧠 Smart react hotkeys
 
 ![License](https://img.shields.io/github/license/aifrim/react-smartkeys)
 ![NVM Version](https://img.shields.io/npm/v/react-smartkeys)
@@ -12,7 +12,6 @@
 ![npm bundle size](https://img.shields.io/bundlephobia/min/react-smartkeys)
 
 ![GitHub branch checks state](https://img.shields.io/github/checks-status/aifrim/react-smartkeys/main)
-![Testspace tests (compact)](https://img.shields.io/testspace/tests/aifrim/aifrim:react-smartkeys/main?compact_message)
 ![Snyk Vulnerabilities for GitHub Repo](https://img.shields.io/snyk/vulnerabilities/github/aifrim/react-smartkeys)
 
 ## Install
