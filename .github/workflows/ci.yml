@@ -99,36 +99,34 @@ jobs:
 
       - run: yarn test:format
 
-  publish:
-    needs: [build, test, lint, format]
-    name: publish
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    strategy:
-      matrix:
-        include:
-          - registry-url: https://registry.npmjs.org
-            registry-token: secrets.NPM_PUBLISH
-          - registry-url: https://npm.pkg.github.com
-            registry-token: secrets.GH_PACKAGES_PUBLISH
-    steps:
-      - uses: actions/checkout@v3
+  # publish:
+  #   needs: [build, test, lint, format]
+  #   name: publish
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         - registry-url: https://registry.npmjs.org
+  #           registry-token: '${{ github.secrets.NPM_PUBLISH }}'
+  #         - registry-url: https://npm.pkg.github.com
+  #           registry-token: '${{ github.secrets.GH_PACKAGES_PUBLISH }}'
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - uses: actions/cache@v3
-        with:
-          path: |
-            dist
-          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
-          restore-keys: |
-            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
+  #     - uses: actions/cache@v3
+  #       with:
+  #         path: |
+  #           dist
+  #         key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
+  #         restore-keys: |
+  #           build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 14.17.0
-          registry-url: ${{ matrix.registry-url }}
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 14.17.0
+  #         registry-url: ${{ matrix.registry-url }}
 
-      - run: npm login
-
-      - run: npm publish --ignore-scripts
-        env:
-          NODE_AUTH_TOKEN: ${{ matrix.registry-token }}
+  #     - run: npm publish --ignore-scripts
+  #       env:
+  #         NODE_AUTH_TOKEN: matrix.registry-token
