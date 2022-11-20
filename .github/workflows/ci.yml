@@ -16,6 +16,7 @@ jobs:
         with:
           path: |
             node_modules
+            package/node_modules
           key: npm-feature-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             npm-feature-${{ hashFiles('yarn.lock') }}
@@ -23,7 +24,7 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: |
-            dist
+            package/dist
           key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
           restore-keys: |
             build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
@@ -33,6 +34,7 @@ jobs:
           node-version: 14.17.0
 
       - run: yarn install --frozen-lockfile 2> >(grep -v warning 1>&2)
+      - run: yarn workspaces run prepare
 
   test:
     needs: [build]
@@ -45,16 +47,24 @@ jobs:
         with:
           path: |
             node_modules
+            package/node_modules
           key: npm-feature-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             npm-feature-${{ hashFiles('yarn.lock') }}
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            package/dist
+          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
+          restore-keys: |
+            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
 
       - uses: actions/setup-node@v3
         with:
           node-version: 14.17.0
 
-      - run: yarn prepare
-      - run: yarn test:unit
+      - run: yarn workspaces run test:unit
 
   lint:
     needs: [build]
@@ -67,16 +77,24 @@ jobs:
         with:
           path: |
             node_modules
+            package/node_modules
           key: npm-feature-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             npm-feature-${{ hashFiles('yarn.lock') }}
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            package/dist
+          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
+          restore-keys: |
+            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
 
       - uses: actions/setup-node@v3
         with:
           node-version: 14.17.0
 
-      - run: yarn prepare
-      - run: yarn test:lint
+      - run: yarn workspaces run test:lint
 
   format:
     needs: [build]
@@ -89,6 +107,7 @@ jobs:
         with:
           path: |
             node_modules
+            package/node_modules
           key: npm-feature-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             npm-feature-${{ hashFiles('yarn.lock') }}
@@ -97,7 +116,7 @@ jobs:
         with:
           node-version: 14.17.0
 
-      - run: yarn test:format
+      - run: yarn workspaces run test:format
 
   # publish:
   #   needs: [build, test, lint, format]
