@@ -1,0 +1,96 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      targetEnv:
+        description: 'Release Type'
+        required: true
+        default: 'prerelease'
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+          - premajor
+          - preminor
+          - prepatch
+          - prerelease
+          - from-git
+      mode:
+        description: 'Pre-release identifier'
+        required: true
+        default: 'alpha'
+        type: string
+
+jobs:
+  preflight-checks:
+    uses: ./.github/workflows/ci.yml
+
+  publish-npm:
+    needs: [preflight-checks]
+    name: publish to npm
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            package/node_modules
+          key: dependencies-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            dependencies-${{ hashFiles('yarn.lock') }}
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            package/dist
+          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
+          restore-keys: |
+            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14.17.0
+          registry-url: ${{ matrix.registry-url }}
+
+      - run: npm publish --workspace package --ignore-scripts --registry=https://registry.npmjs.org
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH }}
+
+  publish-github:
+    needs: [preflight-checks]
+    name: publish to github packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            package/node_modules
+          key: dependencies-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            dependencies-${{ hashFiles('yarn.lock') }}
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            package/dist
+          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
+          restore-keys: |
+            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14.17.0
+          registry-url: ${{ matrix.registry-url }}
+
+      - run: node prepare-github-packages.js @aifrim/react-smartkeys
+
+      - run: npm publish --workspace package --ignore-scripts --registry=https://npm.pkg.github.com
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GH_PUBLISH }}

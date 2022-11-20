@@ -17,17 +17,17 @@ jobs:
           path: |
             node_modules
             package/node_modules
-          key: npm-feature-${{ hashFiles('yarn.lock') }}
+          key: dependencies-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            npm-feature-${{ hashFiles('yarn.lock') }}
+            dependencies-${{ hashFiles('yarn.lock') }}
 
       - uses: actions/cache@v3
         with:
           path: |
             package/dist
-          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
+          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
           restore-keys: |
-            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
+            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
 
       - uses: actions/setup-node@v3
         with:
@@ -48,17 +48,17 @@ jobs:
           path: |
             node_modules
             package/node_modules
-          key: npm-feature-${{ hashFiles('yarn.lock') }}
+          key: dependencies-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            npm-feature-${{ hashFiles('yarn.lock') }}
+            dependencies-${{ hashFiles('yarn.lock') }}
 
       - uses: actions/cache@v3
         with:
           path: |
             package/dist
-          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
+          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
           restore-keys: |
-            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
+            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
 
       - uses: actions/cache@v3
         with:
@@ -86,17 +86,17 @@ jobs:
           path: |
             node_modules
             package/node_modules
-          key: npm-feature-${{ hashFiles('yarn.lock') }}
+          key: dependencies-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            npm-feature-${{ hashFiles('yarn.lock') }}
+            dependencies-${{ hashFiles('yarn.lock') }}
 
       - uses: actions/cache@v3
         with:
           path: |
             package/dist
-          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
+          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
           restore-keys: |
-            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
+            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
 
       - uses: actions/setup-node@v3
         with:
@@ -116,44 +116,12 @@ jobs:
           path: |
             node_modules
             package/node_modules
-          key: npm-feature-${{ hashFiles('yarn.lock') }}
+          key: dependencies-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            npm-feature-${{ hashFiles('yarn.lock') }}
+            dependencies-${{ hashFiles('yarn.lock') }}
 
       - uses: actions/setup-node@v3
         with:
           node-version: 14.17.0
 
       - run: yarn workspaces run test:format
-
-  # publish:
-  #   needs: [build, test, lint, format]
-  #   name: publish
-  #   runs-on: ubuntu-latest
-  #   if: github.ref == 'refs/heads/main'
-  #   strategy:
-  #     matrix:
-  #       include:
-  #         - registry-url: https://registry.npmjs.org
-  #           registry-token: '${{ github.secrets.NPM_PUBLISH }}'
-  #         - registry-url: https://npm.pkg.github.com
-  #           registry-token: '${{ github.secrets.GH_PACKAGES_PUBLISH }}'
-  #   steps:
-  #     - uses: actions/checkout@v3
-
-  #     - uses: actions/cache@v3
-  #       with:
-  #         path: |
-  #           dist
-  #         key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
-  #         restore-keys: |
-  #           build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
-
-  #     - uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 14.17.0
-  #         registry-url: ${{ matrix.registry-url }}
-
-  #     - run: npm publish --ignore-scripts
-  #       env:
-  #         NODE_AUTH_TOKEN: matrix.registry-token
