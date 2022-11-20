@@ -1,6 +1,7 @@
 import { HotKey, parseHotkey } from 'is-hotkey'
 import React, {
   createContext,
+  forwardRef,
   PropsWithChildren,
   useCallback,
   useContext,
@@ -10,14 +11,32 @@ import React, {
   useState
 } from 'react'
 
+const cls = (
+  ...classes: (string | undefined | false)[]
+): string | undefined => {
+  const ret = classes.filter((c) => !!c).join(' ')
+
+  return ret || undefined
+}
+
 type Callback = () => void
 
 export type Groups = string
 
+export type Classes = {
+  root?: string
+  selected?: string
+  selecting?: string
+  part?: {
+    kbd?: string
+    selected?: string
+  }
+}
+
 export type SmartkeyDefinition = {
   key: string
   passthrough?: boolean
-  group: Groups
+  group?: Groups
 }
 
 type SmartkeyDefinitionStorage = {
@@ -29,19 +48,26 @@ type SmartkeysContext = {
   register: (keyDef: SmartkeyDefinition, cb: Callback) => void
   unregister: (keyDef: SmartkeyDefinition) => void
   storage: Record<string, SmartkeyDefinitionStorage>
+  classes: Classes
 }
 
-const Smartkeys = createContext<SmartkeysContext>({
+const Context = createContext<SmartkeysContext>({
   register: () => {},
   unregister: () => {},
-  storage: {}
+  storage: {},
+  classes: {}
 })
 
 type SmartkeysProviderProps = PropsWithChildren<{
   keyChainingTime?: number
+  classes?: Classes
 }>
 
-function Provider({ children, keyChainingTime = 200 }: SmartkeysProviderProps) {
+function Provider({
+  children,
+  keyChainingTime = 200,
+  classes = {}
+}: SmartkeysProviderProps) {
   const keyChainingTimeRef = useRef(keyChainingTime)
 
   const [storage, store] = useState<SmartkeysContext['storage']>({})
@@ -135,17 +161,18 @@ function Provider({ children, keyChainingTime = 200 }: SmartkeysProviderProps) {
     return () => clearTimeout(timeout)
   }, [lastKey])
 
-  return (
-    <Smartkeys.Provider value={{ register, unregister, storage }}>
-      {children}
-    </Smartkeys.Provider>
+  const value = useMemo(
+    () => ({ register, unregister, storage, classes }),
+    [storage, classes]
   )
+
+  return <Context.Provider value={value}>{children}</Context.Provider>
 }
 
-type UseSmartkeysProp = SmartkeyDefinition | SmartkeyDefinition[]
+export type UseSmartkeysProp = SmartkeyDefinition | SmartkeyDefinition[]
 
 export function useSmartkeys(props: UseSmartkeysProp) {
-  const { register, unregister } = useContext(Smartkeys)
+  const { register, unregister } = useContext(Context)
   const [called, call] = useState<string>()
 
   useEffect(() => {
@@ -180,31 +207,97 @@ export function useGroupedSmartkeys(): Record<
   Groups,
   SmartkeyGroupedDefinition[]
 > {
-  const { storage } = useContext(Smartkeys)
+  const { storage } = useContext(Context)
 
   return useMemo(
     () =>
-      Object.values(storage).reduce(
-        (acc, { keyDef: { group, key, passthrough } }) => ({
-          ...acc,
-          [group]: [
-            ...(acc[group] ?? []),
-            {
-              key,
-              ...(passthrough ? { passthrough } : {}),
-              hotkey:
-                key.indexOf(' ') > 0
-                  ? key.split(' ').map((k) => parseHotkey(k))
-                  : parseHotkey(key)
-            }
-          ]
-        }),
-        {}
-      ),
+      Object.values(storage)
+        .filter(({ keyDef: { group } }) => !!group)
+        .reduce(
+          (acc, { keyDef: { group = '', key, passthrough } }) => ({
+            ...acc,
+            [group]: [
+              ...(acc[group] ?? []),
+              {
+                key,
+                ...(passthrough ? { passthrough } : {}),
+                hotkey:
+                  key.indexOf(' ') > 0
+                    ? key.split(' ').map((k) => parseHotkey(k))
+                    : parseHotkey(key)
+              }
+            ]
+          }),
+          {}
+        ),
     [storage]
   )
 }
 
+export type SmartkeyViewProps = {
+  smartkey: string
+  holdLoading?: boolean
+  highlight?: boolean
+  highlightParts?: boolean
+  classes?: Classes
+}
+
+const View = forwardRef(
+  (
+    {
+      smartkey,
+      classes: propClasses,
+      holdLoading = false,
+      highlight = false,
+      highlightParts = false
+    }: SmartkeyViewProps,
+    ref: React.MutableRefObject<HTMLDivElement | null>
+  ) => {
+    const { classes: ctxClasses } = useContext(Context)
+    const classes = propClasses ?? ctxClasses
+
+    const parts = smartkey.split('+')
+
+    const list = useMemo(
+      () =>
+        parts.map((key) =>
+          key.length === 1 ? { key } : { key: key.replace('?', '') }
+        ),
+      [smartkey]
+    )
+
+    const key = useSmartkeys(list)
+    const success = key === smartkey
+
+    return (
+      <div
+        ref={ref}
+        className={cls(
+          classes.root,
+          success && highlight && classes.selected,
+          success && highlight && holdLoading && classes.selecting
+        )}
+      >
+        {parts.map((part) => (
+          <kbd
+            key={part}
+            className={cls(
+              classes.part?.kbd,
+              success &&
+                highlightParts &&
+                key === part &&
+                classes.part?.selected
+            )}
+          >
+            {part}
+          </kbd>
+        ))}
+      </div>
+    )
+  }
+)
+
 export default {
-  Provider
+  Provider,
+  View
 }
