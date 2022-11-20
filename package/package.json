@@ -1,7 +1,11 @@
 {
   "name": "react-smartkeys",
   "version": "0.0.1-alpha.0",
-  "repository": "aifrim/react-smartkeys",
+  "repository": {
+    "type": "github",
+    "url": "aifrim/react-smartkeys",
+    "directory": "package"
+  },
   "description": "🧠 Smart hotkeys for your react app",
   "author": "aifrim",
   "license": "MIT",
