@@ -10,6 +10,7 @@ dist
 
 # tests
 reports
+__snapshots__
 
 # misc
 .DS_Store
