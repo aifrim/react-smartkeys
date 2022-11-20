@@ -60,11 +60,19 @@ jobs:
           restore-keys: |
             build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.job }}-${{ github.ref }}-${{ github.sha }}
 
+      - uses: actions/cache@v3
+        with:
+          path: |
+            package/__snapshots__
+          key: snapshots-${{ hashFiles('yarn.lock') }}-${{ hashFiles('smartkey.tsx') }}-${{ hashFiles('smartkey.test.tsx') }}
+          restore-keys: |
+            snapshots-${{ hashFiles('yarn.lock') }}-${{ hashFiles('smartkey.tsx') }}-${{ hashFiles('smartkey.test.tsx') }}
+
       - uses: actions/setup-node@v3
         with:
           node-version: 14.17.0
 
-      - run: yarn workspaces run test:unit
+      - run: yarn workspaces run test:unit --updateSnapshots=$([[ $(git branch --show-current) == "main" ]] && echo true || echo false)
 
   lint:
     needs: [build]

@@ -28,6 +28,7 @@ describe('Smartkeys', () => {
 
       const container = render(<Test />)
 
+      expect(container).toMatchSnapshot()
       expect(container.getByText(testMessage)).toBeInTheDocument()
     })
   })
@@ -62,15 +63,18 @@ describe('Smartkeys', () => {
 
       const container = render(<Test />)
 
+      expect(container).toMatchSnapshot()
       fireEvent.keyUp(container.baseElement, {
         ctrlKey: true,
         key: 'k'
       })
 
+      expect(container).toMatchSnapshot()
       expect(container.getByText(keyDef.key)).toBeInTheDocument()
 
       fireEvent.click(container.getByText('Unregister'), {})
 
+      expect(container).toMatchSnapshot()
       expect(container.getByText('no-key')).toBeInTheDocument()
     })
 
@@ -102,11 +106,13 @@ describe('Smartkeys', () => {
 
       const container = render(<Test />)
 
+      expect(container).toMatchSnapshot()
       fireEvent.keyUp(container.baseElement, {
         ctrlKey: true,
         key: 'k'
       })
 
+      expect(container).toMatchSnapshot()
       expect(container.getByText(keyList[0].key)).toBeInTheDocument()
 
       await act(async () => {
@@ -120,6 +126,7 @@ describe('Smartkeys', () => {
         })
       })
 
+      expect(container).toMatchSnapshot()
       expect(container.getByText(keyList[1].key)).toBeInTheDocument()
     })
 
@@ -145,6 +152,7 @@ describe('Smartkeys', () => {
 
       const container = render(<Test />)
 
+      expect(container).toMatchSnapshot()
       fireEvent.keyUp(container.baseElement, {
         ctrlKey: true,
         key: 'k'
@@ -154,11 +162,13 @@ describe('Smartkeys', () => {
         await sleep(100)
       })
 
+      expect(container).toMatchSnapshot()
       fireEvent.keyUp(container.baseElement, {
         altKey: true,
         key: 'a'
       })
 
+      expect(container).toMatchSnapshot()
       expect(container.getByText(keyDef.key)).toBeInTheDocument()
     })
 
@@ -229,6 +239,7 @@ describe('Smartkeys', () => {
             : parseHotkey(def.key)
       })
 
+      expect(container).toMatchSnapshot()
       expect(container.getByText(getStr(getDef(keyDef1)))).toBeInTheDocument()
       expect(container.getByText(getStr(getDef(keyDef2)))).toBeInTheDocument()
     })
@@ -275,6 +286,7 @@ describe('Smartkeys', () => {
       const textarea = container.getByTestId('div-focus')
 
       for (const focusedContainer of [input, div, textarea]) {
+        expect(container).toMatchSnapshot()
         fireEvent.keyUp(focusedContainer, {
           ctrlKey: true,
           key: 'k'
@@ -284,11 +296,13 @@ describe('Smartkeys', () => {
           await sleep(100)
         })
 
+        expect(container).toMatchSnapshot()
         fireEvent.keyUp(focusedContainer, {
           ctrlKey: true,
           key: 'a'
         })
 
+        expect(container).toMatchSnapshot()
         expect(container.getByText(keyList[0].key)).toBeInTheDocument()
 
         await act(async () => {
@@ -302,6 +316,7 @@ describe('Smartkeys', () => {
           })
         })
 
+        expect(container).toMatchSnapshot()
         expect(container.getByText(keyList[0].key)).toBeInTheDocument()
       }
     })
@@ -312,6 +327,14 @@ describe('Smartkeys', () => {
       expect(Smartkeys.View).toBeTruthy()
     })
 
+    it('should respect snapshot', () => {
+      expect(
+        <Smartkeys.Provider>
+          <div>Test</div>
+        </Smartkeys.Provider>
+      ).toMatchSnapshot()
+    })
+
     it('should render simple hotkey', () => {
       const container = render(
         <Smartkeys.Provider>
@@ -319,23 +342,27 @@ describe('Smartkeys', () => {
         </Smartkeys.Provider>
       )
 
+      expect(container).toMatchSnapshot()
       fireEvent.keyUp(container.baseElement, {
         ctrlKey: true
       })
 
       expect(container.getByText('mod')).toBeInTheDocument()
 
+      expect(container).toMatchSnapshot()
       fireEvent.keyUp(container.baseElement, {
         key: 'k'
       })
 
       expect(container.getByText('k')).toBeInTheDocument()
 
+      expect(container).toMatchSnapshot()
       fireEvent.keyUp(container.baseElement, {
         ctrlKey: true,
         key: 'k'
       })
 
+      expect(container).toMatchSnapshot()
       expect(container.getByText('mod')).toBeInTheDocument()
       expect(container.getByText('k')).toBeInTheDocument()
     })
@@ -357,10 +384,12 @@ describe('Smartkeys', () => {
         </Smartkeys.Provider>
       )
 
+      expect(container).toMatchSnapshot()
       fireEvent.keyUp(container.baseElement, {
         key: 'enter'
       })
 
+      expect(container).toMatchSnapshot()
       expect(container.getByText('enter')).toBeInTheDocument()
 
       // TODO: test that it has the correct classes - test selecting separately

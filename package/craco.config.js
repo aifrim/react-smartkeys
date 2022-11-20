@@ -1,4 +1,5 @@
-module.exports = {
+/** @type {import('@craco/types').CracoConfig} */
+const config = {
   jest: {
     configure: (cfg, { env, paths, resolve, rootDir }) => {
       return {
@@ -20,3 +21,5 @@ module.exports = {
     }
   }
 }
+
+module.exports = config
