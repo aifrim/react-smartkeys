@@ -51,12 +51,15 @@ jobs:
           restore-keys: |
             build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
 
+      - run: cp README.md package/README.md
+
       - uses: actions/setup-node@v3
         with:
           node-version: 14.17.0
           registry-url: https://registry.npmjs.org/
 
       - uses: JS-DevTools/npm-publish@v1
+        continue-on-error: true
         with:
           token: ${{ secrets.NPM_PUBLISH }}
           registry: https://registry.npmjs.org/
@@ -88,6 +91,8 @@ jobs:
           restore-keys: |
             build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
 
+      - run: cp README.md package/README.md
+
       - uses: actions/setup-node@v3
         with:
           node-version: 14.17.0
@@ -102,3 +107,10 @@ jobs:
           package: ./package/package.json
           access: public
           check-version: true
+
+  release:
+    needs: [publish-npm, publish-github]
+    name: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
