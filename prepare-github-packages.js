@@ -5,7 +5,7 @@ const name = process.argv[2]
 
 if (!name) {
   console.error('Please provide the new package name')
-  console.error('E.g.: node prepare.js react-smartkeys')
+  console.error('E.g.: node prepare-github-package.js react-smartkeys')
 } else {
   const file = './package/package.json'
 

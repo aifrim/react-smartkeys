@@ -1,9 +1,10 @@
 name: release
+run-name: 'release: ${{ github.event.inputs.release-type }} ${{ github.event.inputs.pre-identifier }} dry-run: ${{ github.event.inputs.dry-run }}'
 
 on:
   workflow_dispatch:
     inputs:
-      version:
+      release-type:
         description: 'Release Type'
         required: true
         default: 'prerelease'
@@ -16,19 +17,58 @@ on:
           - preminor
           - prepatch
           - prerelease
-          - from-git
-      pi:
+      pre-identifier:
         description: 'Pre-release identifier'
-        required: true
+        required: false
         default: 'alpha'
         type: string
+      dry-run:
+        description: 'Dry run the release'
+        required: true
+        default: true
+        type: boolean
 
 jobs:
   preflight-checks:
     uses: ./.github/workflows/ci.yml
 
-  publish-npm:
+  prepare:
     needs: [preflight-checks]
+    name: prepare
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            package/node_modules
+          key: dependencies-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            dependencies-${{ hashFiles('yarn.lock') }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14.17.0
+
+      - run: node prepare-version.js ${{ github.event.inputs.release-type }} ${{ github.event.inputs.pre-identifier }}
+        id: version
+
+      - uses: EndBug/add-and-commit@v9
+        if: ${{ !github.event.inputs.dry-run }}
+        with:
+          add: 'package/package.json'
+          tag: v${{ steps.version.outputs.stdout }}
+          message: 'chore(release): v${{ steps.version.outputs.stdout }}'
+          committer_name: GitHub Actions
+          committer_email: actions@github.com
+          push: true
+
+  publish-npm:
+    needs: [prepare]
     name: publish to npm
     runs-on: ubuntu-latest
     steps:
@@ -59,16 +99,24 @@ jobs:
           registry-url: https://registry.npmjs.org/
 
       - uses: JS-DevTools/npm-publish@v1
-        continue-on-error: true
         with:
           token: ${{ secrets.NPM_PUBLISH }}
           registry: https://registry.npmjs.org/
           package: ./package/package.json
           access: public
           check-version: true
+          dry-run: ${{ github.event.inputs.dry-run }}
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: react-smartkeys@${{ github.jobs.prepare.steps.version.outputs.stdout }}
+          path: |
+            package/dist
+            package/README.md
+            package/package.json
 
   publish-github:
-    needs: [preflight-checks]
+    needs: [prepare]
     name: publish to github packages
     runs-on: ubuntu-latest
     steps:
@@ -107,10 +155,26 @@ jobs:
           package: ./package/package.json
           access: public
           check-version: true
+          dry-run: ${{ github.event.inputs.dry-run }}
 
   release:
     needs: [publish-npm, publish-github]
     name: release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v3
+
+      - uses: TheDoctor0/zip-release@0.6.2
+        with:
+          type: zip
+          directory: package
+          filename: 'react-smartkeys-v${{ github.jobs.prepare.steps.version.outputs.stdout }}.zip'
+          exclusions: node_modules reports src craco.config.js tsconfig.* .*
+
+      - run: gh release create v${{ github.jobs.prepare.steps.version.outputs.stdout }} --generate-notes
+        if: ${{ !github.event.inputs.dry-run }}
+
+      - run: gh release upload v${{ github.jobs.prepare.steps.version.outputs.stdout }} 'react-smartkeys-v${{ github.jobs.prepare.steps.version.outputs.stdout }}.zip#react-smartkeys@${{ github.jobs.prepare.steps.version.outputs.stdout }}'
+        if: ${{ !github.event.inputs.dry-run }}
