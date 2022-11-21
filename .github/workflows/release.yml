@@ -59,8 +59,10 @@ jobs:
       - uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_PUBLISH }}
+          registry: https://registry.npmjs.org/
           package: ./package/package.json
           access: public
+          check-version: true
 
   publish-github:
     needs: [preflight-checks]
@@ -96,5 +98,7 @@ jobs:
       - uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.GH_PUBLISH }}
+          registry: https://npm.pkg.github.com
           package: ./package/package.json
           access: public
+          check-version: true
