@@ -1,13 +1,16 @@
 {
   "name": "react-smartkeys",
   "version": "0.0.1-alpha.0",
+  "description": "🧠 Smart hotkeys for your react app",
+  "author": {
+    "name": "Alexandru Ifrim",
+    "url": "https://aifrim.com/"
+  },
   "repository": {
     "type": "github",
     "url": "https://github.com/aifrim/react-smartkeys",
     "directory": "package"
   },
-  "description": "🧠 Smart hotkeys for your react app",
-  "author": "aifrim",
   "license": "MIT",
   "main": "dist/index.js",
   "source": "src/index.tsx",

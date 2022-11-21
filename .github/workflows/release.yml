@@ -1,9 +1,10 @@
 name: release
+run-name: 'release: ${{ github.event.inputs.release-type }} ${{ github.event.inputs.pre-identifier }} dry-run: ${{ github.event.inputs.dry-run }}'
 
 on:
   workflow_dispatch:
     inputs:
-      version:
+      release-type:
         description: 'Release Type'
         required: true
         default: 'prerelease'
@@ -16,19 +17,59 @@ on:
           - preminor
           - prepatch
           - prerelease
-          - from-git
-      pi:
+      pre-identifier:
         description: 'Pre-release identifier'
-        required: true
+        required: false
         default: 'alpha'
         type: string
+      dry-run:
+        description: 'Dry run the release'
+        required: true
+        default: true
+        type: boolean
 
 jobs:
   preflight-checks:
     uses: ./.github/workflows/ci.yml
 
-  publish-npm:
+  prepare:
     needs: [preflight-checks]
+    name: prepare
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            package/node_modules
+          key: dependencies-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            dependencies-${{ hashFiles('yarn.lock') }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14.17.0
+
+      - run: echo "version=$(node prepare-version.js ${{ github.event.inputs.release-type }} ${{ github.event.inputs.pre-identifier }})" >> $GITHUB_OUTPUT
+        id: version
+
+      - run: |
+          git config --global user.name 'Alexandru Ifrim'
+          git config --global user.email 'aifrim@users.noreply.github.com'
+
+          git add package/package.json
+          git commit -m "chore(release): v${{ steps.version.outputs.version }}"
+          git push
+        if: ${{ !github.event.inputs.dry-run }}
+
+  publish-npm:
+    needs: [prepare]
     name: publish to npm
     runs-on: ubuntu-latest
     steps:
@@ -58,17 +99,19 @@ jobs:
           node-version: 14.17.0
           registry-url: https://registry.npmjs.org/
 
+      - run: node prepare-version.js ${{ github.event.inputs.release-type }} ${{ github.event.inputs.pre-identifier }}
+
       - uses: JS-DevTools/npm-publish@v1
-        continue-on-error: true
         with:
           token: ${{ secrets.NPM_PUBLISH }}
           registry: https://registry.npmjs.org/
           package: ./package/package.json
           access: public
           check-version: true
+          dry-run: ${{ github.event.inputs.dry-run }}
 
   publish-github:
-    needs: [preflight-checks]
+    needs: [prepare]
     name: publish to github packages
     runs-on: ubuntu-latest
     steps:
@@ -100,6 +143,8 @@ jobs:
 
       - run: node prepare-github-packages.js @aifrim/react-smartkeys
 
+      - run: node prepare-version.js ${{ github.event.inputs.release-type }} ${{ github.event.inputs.pre-identifier }}
+
       - uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.GH_PUBLISH }}
@@ -107,10 +152,44 @@ jobs:
           package: ./package/package.json
           access: public
           check-version: true
+          dry-run: ${{ github.event.inputs.dry-run }}
 
   release:
-    needs: [publish-npm, publish-github]
+    needs: [prepare, publish-npm, publish-github]
     name: release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            package/node_modules
+          key: dependencies-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            dependencies-${{ hashFiles('yarn.lock') }}
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            package/dist
+          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
+          restore-keys: |
+            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
+
+      - run: node prepare-version.js ${{ github.event.inputs.release-type }} ${{ github.event.inputs.pre-identifier }}
+
+      - run: npm pack --workspace package
+
+      - run: gh release create v${{ needs.prepare.outputs.version }} --generate-notes
+        if: ${{ !github.event.inputs.dry-run }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - run: gh release upload v${{ needs.prepare.outputs.version }} 'react-smartkeys-${{ needs.prepare.outputs.version }}.tgz#react-smartkeys@${{ needs.prepare.outputs.version }} (tar)'
+        if: ${{ !github.event.inputs.dry-run }}
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -3,6 +3,8 @@ name: ci
 on:
   push:
     branches: ['main']
+    paths-ignore:
+      - '.github/workflows/release.yml'
   pull_request:
     branches: ['main']
   workflow_call:
