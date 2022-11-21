@@ -3,7 +3,7 @@ name: release
 on:
   workflow_dispatch:
     inputs:
-      targetEnv:
+      version:
         description: 'Release Type'
         required: true
         default: 'prerelease'
@@ -17,7 +17,7 @@ on:
           - prepatch
           - prerelease
           - from-git
-      mode:
+      pi:
         description: 'Pre-release identifier'
         required: true
         default: 'alpha'
@@ -54,7 +54,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 14.17.0
-          registry-url: ${{ matrix.registry-url }}
+          registry-url: https://registry.npmjs.org/
 
       - uses: JS-DevTools/npm-publish@v1
         with:
@@ -89,7 +89,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 14.17.0
-          registry-url: ${{ matrix.registry-url }}
+          registry-url: https://npm.pkg.github.com
 
       - run: node prepare-github-packages.js @aifrim/react-smartkeys
 
