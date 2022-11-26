@@ -1,7 +1,14 @@
 {
   "name": "react-smartkeys",
-  "version": "0.0.1-alpha.0",
+  "version": "0.0.1-alpha.1",
   "description": "🧠 Smart hotkeys for your react app",
+  "keywords": [
+    "react",
+    "hotkey",
+    "hotkeys",
+    "smartkey",
+    "smartkeys"
+  ],
   "author": {
     "name": "Alexandru Ifrim",
     "url": "https://aifrim.com/"

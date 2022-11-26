@@ -1,5 +1,5 @@
 name: release
-run-name: 'release: ${{ github.event.inputs.release-type }} ${{ github.event.inputs.pre-identifier }} dry-run: ${{ github.event.inputs.dry-run }}'
+run-name: 'release: ${{ inputs.release-type }} ${{ inputs.pre-identifier }} dry-run: ${{ inputs.dry-run }}'
 
 on:
   workflow_dispatch:
@@ -56,7 +56,7 @@ jobs:
         with:
           node-version: 14.17.0
 
-      - run: echo "version=$(node prepare-version.js ${{ github.event.inputs.release-type }} ${{ github.event.inputs.pre-identifier }})" >> $GITHUB_OUTPUT
+      - run: echo "version=$(node prepare-version.js ${{ inputs.release-type }} ${{ inputs.pre-identifier }})" >> $GITHUB_OUTPUT
         id: version
 
       - run: |
@@ -66,7 +66,7 @@ jobs:
           git add package/package.json
           git commit -m "chore(release): v${{ steps.version.outputs.version }}"
           git push
-        if: ${{ !github.event.inputs.dry-run }}
+        if: ${{ !inputs.dry-run }}
 
   publish-npm:
     needs: [prepare]
@@ -99,7 +99,7 @@ jobs:
           node-version: 14.17.0
           registry-url: https://registry.npmjs.org/
 
-      - run: node prepare-version.js ${{ github.event.inputs.release-type }} ${{ github.event.inputs.pre-identifier }}
+      - run: node prepare-version.js ${{ inputs.release-type }} ${{ inputs.pre-identifier }}
 
       - uses: JS-DevTools/npm-publish@v1
         with:
@@ -108,7 +108,7 @@ jobs:
           package: ./package/package.json
           access: public
           check-version: true
-          dry-run: ${{ github.event.inputs.dry-run }}
+          dry-run: ${{ inputs.dry-run }}
 
   publish-github:
     needs: [prepare]
@@ -143,7 +143,7 @@ jobs:
 
       - run: node prepare-github-packages.js @aifrim/react-smartkeys
 
-      - run: node prepare-version.js ${{ github.event.inputs.release-type }} ${{ github.event.inputs.pre-identifier }}
+      - run: node prepare-version.js ${{ inputs.release-type }} ${{ inputs.pre-identifier }}
 
       - uses: JS-DevTools/npm-publish@v1
         with:
@@ -152,7 +152,7 @@ jobs:
           package: ./package/package.json
           access: public
           check-version: true
-          dry-run: ${{ github.event.inputs.dry-run }}
+          dry-run: ${{ inputs.dry-run }}
 
   release:
     needs: [prepare, publish-npm, publish-github]
@@ -180,16 +180,16 @@ jobs:
           restore-keys: |
             build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
 
-      - run: node prepare-version.js ${{ github.event.inputs.release-type }} ${{ github.event.inputs.pre-identifier }}
+      - run: node prepare-version.js ${{ inputs.release-type }} ${{ inputs.pre-identifier }}
 
       - run: npm pack --workspace package
 
       - run: gh release create v${{ needs.prepare.outputs.version }} --generate-notes
-        if: ${{ !github.event.inputs.dry-run }}
+        if: ${{ !inputs.dry-run }}
         env:
           GH_TOKEN: ${{ github.token }}
 
       - run: gh release upload v${{ needs.prepare.outputs.version }} 'react-smartkeys-${{ needs.prepare.outputs.version }}.tgz#react-smartkeys@${{ needs.prepare.outputs.version }} (tar)'
-        if: ${{ !github.event.inputs.dry-run }}
+        if: ${{ !inputs.dry-run }}
         env:
           GH_TOKEN: ${{ github.token }}
