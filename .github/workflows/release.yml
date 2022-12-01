@@ -48,9 +48,9 @@ jobs:
           path: |
             node_modules
             package/node_modules
-          key: dependencies-${{ hashFiles('yarn.lock') }}-18.12.1-18.x
+          key: dependencies-${{ hashFiles('yarn.lock') }}-18.x
           restore-keys: |
-            dependencies-${{ hashFiles('yarn.lock') }}-18.12.1-18.x
+            dependencies-${{ hashFiles('yarn.lock') }}-18.x
 
       - uses: actions/setup-node@v3
         with:
@@ -80,17 +80,17 @@ jobs:
           path: |
             node_modules
             package/node_modules
-          key: dependencies-${{ hashFiles('yarn.lock') }}-18.12.1-18.x
+          key: dependencies-${{ hashFiles('yarn.lock') }}-18.x
           restore-keys: |
-            dependencies-${{ hashFiles('yarn.lock') }}-18.12.1-18.x
+            dependencies-${{ hashFiles('yarn.lock') }}-18.x
 
       - uses: actions/cache@v3
         with:
           path: |
             package/dist
-          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}-18.12.1-18.x
+          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}-18.x
           restore-keys: |
-            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}-18.12.1-18.x
+            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}-18.x
 
       - run: cp README.md package/README.md
 
@@ -122,9 +122,9 @@ jobs:
           path: |
             node_modules
             package/node_modules
-          key: dependencies-${{ hashFiles('yarn.lock') }}-18.12.1-18.x
+          key: dependencies-${{ hashFiles('yarn.lock') }}-18.x
           restore-keys: |
-            dependencies-${{ hashFiles('yarn.lock') }}-18.12.1-18.x
+            dependencies-${{ hashFiles('yarn.lock') }}-18.x
 
       - uses: actions/cache@v3
         with:

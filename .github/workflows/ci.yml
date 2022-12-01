@@ -14,12 +14,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [14.21.1, 16.18.1, 18.12.1]
         react: [16.x, 17.x, 18.x]
     steps:
       - uses: actions/checkout@v3
 
-      - run: yarn workspace package add react@${{ matrix.react }}
+      - run: yarn add react@${{ matrix.react }}
         working-directory: package
 
       - uses: actions/cache@v3
@@ -27,21 +26,21 @@ jobs:
           path: |
             node_modules
             package/node_modules
-          key: dependencies-${{ hashFiles('yarn.lock') }}-${{ matrix.node }}-${{ matrix.react }}
+          key: dependencies-${{ hashFiles('yarn.lock') }}-${{ matrix.react }}
           restore-keys: |
-            dependencies-${{ hashFiles('yarn.lock') }}-${{ matrix.node }}-${{ matrix.react }}
+            dependencies-${{ hashFiles('yarn.lock') }}-${{ matrix.react }}
 
       - uses: actions/cache@v3
         with:
           path: |
             package/dist
-          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}-${{ matrix.node }}-${{ matrix.react }}
+          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}-${{ matrix.react }}
           restore-keys: |
-            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}-${{ matrix.node }}-${{ matrix.react }}
+            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}-${{ matrix.react }}
 
       - uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 18.12.1
 
       - run: yarn install --frozen-lockfile 2> >(grep -v warning 1>&2)
       - run: yarn workspaces run prepare
@@ -52,7 +51,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [14.21.1, 16.18.1, 18.12.1]
         react: [16.x, 17.x, 18.x]
     steps:
       - uses: actions/checkout@v3
@@ -62,25 +60,25 @@ jobs:
           path: |
             node_modules
             package/node_modules
-          key: dependencies-${{ hashFiles('yarn.lock') }}-${{ matrix.node }}-${{ matrix.react }}
+          key: dependencies-${{ hashFiles('yarn.lock') }}-${{ matrix.react }}
           restore-keys: |
-            dependencies-${{ hashFiles('yarn.lock') }}-${{ matrix.node }}-${{ matrix.react }}
+            dependencies-${{ hashFiles('yarn.lock') }}-${{ matrix.react }}
 
       - uses: actions/cache@v3
         with:
           path: |
             package/dist
-          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}-${{ matrix.node }}-${{ matrix.react }}
+          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}-${{ matrix.react }}
           restore-keys: |
-            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}-${{ matrix.node }}-${{ matrix.react }}
+            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}-${{ matrix.react }}
 
       - uses: actions/cache@v3
         with:
           path: |
             package/__snapshots__
-          key: snapshots-${{ hashFiles('yarn.lock') }}-${{ hashFiles('smartkey.tsx') }}-${{ hashFiles('smartkey.test.tsx') }}-${{ matrix.node }}-${{ matrix.react }}
+          key: snapshots-${{ hashFiles('yarn.lock') }}-${{ hashFiles('smartkey.tsx') }}-${{ hashFiles('smartkey.test.tsx') }}-${{ matrix.react }}
           restore-keys: |
-            snapshots-${{ hashFiles('yarn.lock') }}-${{ hashFiles('smartkey.tsx') }}-${{ hashFiles('smartkey.test.tsx') }}-${{ matrix.node }}-${{ matrix.react }}
+            snapshots-${{ hashFiles('yarn.lock') }}-${{ hashFiles('smartkey.tsx') }}-${{ hashFiles('smartkey.test.tsx') }}-${{ matrix.react }}
 
       - uses: actions/setup-node@v3
         with:
@@ -94,7 +92,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [14.21.1, 16.18.1, 18.12.1]
         react: [16.x, 17.x, 18.x]
     steps:
       - uses: actions/checkout@v3
@@ -104,9 +101,9 @@ jobs:
           path: |
             node_modules
             package/node_modules
-          key: dependencies-${{ hashFiles('yarn.lock') }}-${{ matrix.node }}-${{ matrix.react }}
+          key: dependencies-${{ hashFiles('yarn.lock') }}-${{ matrix.react }}
           restore-keys: |
-            dependencies-${{ hashFiles('yarn.lock') }}-${{ matrix.node }}-${{ matrix.react }}
+            dependencies-${{ hashFiles('yarn.lock') }}-${{ matrix.react }}
 
       - uses: actions/cache@v3
         with:
@@ -134,9 +131,9 @@ jobs:
           path: |
             node_modules
             package/node_modules
-          key: dependencies-${{ hashFiles('yarn.lock') }}-${{ matrix.node }}-${{ matrix.react }}-18.12.1-18.x
+          key: dependencies-${{ hashFiles('yarn.lock') }}-${{ matrix.react }}-18.12.1-18.x
           restore-keys: |
-            dependencies-${{ hashFiles('yarn.lock') }}-${{ matrix.node }}-${{ matrix.react }}-18.12.1-18.x
+            dependencies-${{ hashFiles('yarn.lock') }}-${{ matrix.react }}-18.12.1-18.x
 
       - uses: actions/setup-node@v3
         with:
