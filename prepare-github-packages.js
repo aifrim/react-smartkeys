@@ -7,7 +7,7 @@ if (!name) {
   console.error('Please provide the new package name')
   console.error('E.g.: node prepare-github-package.js react-smartkeys')
 } else {
-  const file = './package/package.json'
+  const file = './react-smartkeys/package.json'
 
   const data = readFileSync(file, {
     encoding: 'utf-8'
