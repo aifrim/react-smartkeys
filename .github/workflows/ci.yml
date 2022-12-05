@@ -15,11 +15,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.12.1
+
       - uses: actions/cache@v3
         with:
           path: |
             node_modules
-            package/node_modules
+            react-smartkeys/node_modules
+            example/node_modules
           key: dependencies-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             dependencies-${{ hashFiles('yarn.lock') }}
@@ -27,16 +32,13 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: |
-            package/dist
-          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
+            react-smartkeys/dist
+          key: build-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
           restore-keys: |
-            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 14.17.0
+            build-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
 
       - run: yarn install --frozen-lockfile 2> >(grep -v warning 1>&2)
+
       - run: yarn workspaces run prepare
 
   test:
@@ -46,11 +48,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.12.1
+
       - uses: actions/cache@v3
         with:
           path: |
             node_modules
-            package/node_modules
+            react-smartkeys/node_modules
+            example/node_modules
           key: dependencies-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             dependencies-${{ hashFiles('yarn.lock') }}
@@ -58,22 +65,18 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: |
-            package/dist
-          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
+            react-smartkeys/dist
+          key: build-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
           restore-keys: |
-            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
+            build-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
 
       - uses: actions/cache@v3
         with:
           path: |
-            package/__snapshots__
+            react-smartkeys/__snapshots__
           key: snapshots-${{ hashFiles('yarn.lock') }}-${{ hashFiles('smartkey.tsx') }}-${{ hashFiles('smartkey.test.tsx') }}
           restore-keys: |
             snapshots-${{ hashFiles('yarn.lock') }}-${{ hashFiles('smartkey.tsx') }}-${{ hashFiles('smartkey.test.tsx') }}
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 14.17.0
 
       - run: yarn workspaces run test:unit --updateSnapshots=$([[ $(git branch --show-current) == "main" ]] && echo true || echo false)
 
@@ -84,11 +87,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.12.1
+
       - uses: actions/cache@v3
         with:
           path: |
             node_modules
-            package/node_modules
+            react-smartkeys/node_modules
+            example/node_modules
           key: dependencies-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             dependencies-${{ hashFiles('yarn.lock') }}
@@ -96,14 +104,10 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: |
-            package/dist
-          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
+            react-smartkeys/dist
+          key: build-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
           restore-keys: |
-            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 14.17.0
+            build-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
 
       - run: yarn workspaces run test:lint
 
@@ -114,17 +118,18 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.12.1
+
       - uses: actions/cache@v3
         with:
           path: |
             node_modules
-            package/node_modules
+            react-smartkeys/node_modules
+            example/node_modules
           key: dependencies-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             dependencies-${{ hashFiles('yarn.lock') }}
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 14.17.0
 
       - run: yarn workspaces run test:format

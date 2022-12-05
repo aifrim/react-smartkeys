@@ -37,6 +37,7 @@ export type SmartkeyDefinition = {
   key: string
   passthrough?: boolean
   group?: Groups
+  cb?: () => void
 }
 
 type SmartkeyDefinitionStorage = {
@@ -66,7 +67,7 @@ type SmartkeysProviderProps = PropsWithChildren<{
 function Provider({
   children,
   keyChainingTime = 200,
-  classes = {}
+  classes: propClasses
 }: SmartkeysProviderProps) {
   const keyChainingTimeRef = useRef(keyChainingTime)
 
@@ -153,6 +154,10 @@ function Provider({
   }, [])
 
   useEffect(() => {
+    if (!lastKeyRef.current.length) {
+      return
+    }
+
     const timeout = setTimeout(
       () => storeLastKey([]),
       keyChainingTimeRef.current
@@ -161,12 +166,18 @@ function Provider({
     return () => clearTimeout(timeout)
   }, [lastKey])
 
+  const classes = useMemo(() => ({ ...propClasses }), [propClasses])
+
   const value = useMemo(
     () => ({ register, unregister, storage, classes }),
     [storage, classes]
   )
 
-  return <Context.Provider value={value}>{children}</Context.Provider>
+  return (
+    <Context.Provider value={value}>
+      {useMemo(() => children, [children])}
+    </Context.Provider>
+  )
 }
 
 export type UseSmartkeysProp = SmartkeyDefinition | SmartkeyDefinition[]
@@ -191,7 +202,7 @@ export function useSmartkeys(props: UseSmartkeysProp) {
     return () => {
       cbs.forEach((cb) => unregister(cb))
     }
-  }, [props])
+  }, [])
 
   return called
 }
@@ -268,6 +279,8 @@ const View = forwardRef(
 
     const key = useSmartkeys(list)
     const success = key === smartkey
+
+    console.log('key', key, list)
 
     return (
       <div

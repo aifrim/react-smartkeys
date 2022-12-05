@@ -43,18 +43,19 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.12.1
+
       - uses: actions/cache@v3
         with:
           path: |
             node_modules
-            package/node_modules
+            react-smartkeys/node_modules
+            example/node_modules
           key: dependencies-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             dependencies-${{ hashFiles('yarn.lock') }}
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 14.17.0
 
       - run: echo "version=$(node prepare-version.js ${{ inputs.release-type }} ${{ inputs.pre-identifier }})" >> $GITHUB_OUTPUT
         id: version
@@ -63,7 +64,7 @@ jobs:
           git config --global user.name 'Alexandru Ifrim'
           git config --global user.email 'aifrim@users.noreply.github.com'
 
-          git add package/package.json
+          git add react-smartkeys/package.json
           git commit -m "chore(release): v${{ steps.version.outputs.version }}"
           git push
         if: ${{ !inputs.dry-run }}
@@ -75,11 +76,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.12.1
+          registry-url: https://registry.npmjs.org/
+
       - uses: actions/cache@v3
         with:
           path: |
             node_modules
-            package/node_modules
+            react-smartkeys/node_modules
+            example/node_modules
           key: dependencies-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             dependencies-${{ hashFiles('yarn.lock') }}
@@ -87,17 +94,12 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: |
-            package/dist
-          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
+            react-smartkeys/dist
+          key: build-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
           restore-keys: |
-            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
+            build-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
 
-      - run: cp README.md package/README.md
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 14.17.0
-          registry-url: https://registry.npmjs.org/
+      - run: cp README.md react-smartkeys/README.md
 
       - run: node prepare-version.js ${{ inputs.release-type }} ${{ inputs.pre-identifier }}
 
@@ -105,7 +107,7 @@ jobs:
         with:
           token: ${{ secrets.NPM_PUBLISH }}
           registry: https://registry.npmjs.org/
-          package: ./package/package.json
+          package: ./react-smartkeys/package.json
           access: public
           check-version: true
           dry-run: ${{ inputs.dry-run }}
@@ -117,11 +119,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.12.1
+          registry-url: https://npm.pkg.github.com
+
       - uses: actions/cache@v3
         with:
           path: |
             node_modules
-            package/node_modules
+            react-smartkeys/node_modules
+            example/node_modules
           key: dependencies-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             dependencies-${{ hashFiles('yarn.lock') }}
@@ -129,17 +137,12 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: |
-            package/dist
-          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
+            react-smartkeys/dist
+          key: build-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
           restore-keys: |
-            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
+            build-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
 
-      - run: cp README.md package/README.md
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 14.17.0
-          registry-url: https://npm.pkg.github.com
+      - run: cp README.md react-smartkeys/README.md
 
       - run: node prepare-github-packages.js @aifrim/react-smartkeys
 
@@ -149,7 +152,7 @@ jobs:
         with:
           token: ${{ secrets.GH_PUBLISH }}
           registry: https://npm.pkg.github.com
-          package: ./package/package.json
+          package: ./react-smartkeys/package.json
           access: public
           check-version: true
           dry-run: ${{ inputs.dry-run }}
@@ -163,11 +166,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.12.1
+
       - uses: actions/cache@v3
         with:
           path: |
             node_modules
-            package/node_modules
+            react-smartkeys/node_modules
+            example/node_modules
           key: dependencies-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             dependencies-${{ hashFiles('yarn.lock') }}
@@ -175,14 +183,14 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: |
-            package/dist
-          key: build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
+            react-smartkeys/dist
+          key: build-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
           restore-keys: |
-            build-${{ hashFiles('yarn.lock') }}-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
+            build-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
 
       - run: node prepare-version.js ${{ inputs.release-type }} ${{ inputs.pre-identifier }}
 
-      - run: npm pack --workspace package
+      - run: npm pack --workspace react-smartkeys
 
       - run: gh release create v${{ needs.prepare.outputs.version }} --generate-notes
         if: ${{ !inputs.dry-run }}

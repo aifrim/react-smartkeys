@@ -11,7 +11,7 @@ if (!releaseType) {
     'E.g.: node prepare-version.js major | minor | patch | premajor | preminor | prepatch | prerelese [--preid string]'
   )
 } else {
-  const file = './package/package.json'
+  const file = './react-smartkeys/package.json'
 
   const data = readFileSync(file, {
     encoding: 'utf-8'
