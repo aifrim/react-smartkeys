@@ -4,6 +4,6 @@
     "package"
   ],
   "devDependencies": {
-    "semver": "^7.3.8"
+    "semver": "^7.5.2"
   }
 }
